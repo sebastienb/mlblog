@@ -1,0 +1,59 @@
+body {
+  background-color: #FAFAFA;
+  font-family: "Lucida Grande","Lucida Sans Unicode","Lucida Sans",Geneva,Arial,sans-serif;
+  letter-spacing: -.02em; }
+
+a {
+  color: #259D69;
+  text-decoration: none; }
+
+.btn-primary {
+  background-color: #259D69;
+  border: none; }
+  .btn-primary:hover {
+    background-color: #007F69;
+    border: none; }
+  .btn-primary:active {
+    background-color: #007F69;
+    border: none; }
+  .btn-primary:focus {
+    background-color: #007F69;
+    border: none; }
+
+.img-responsive {
+  max-width: 100%; }
+
+::selection {
+  background: rgba(37, 157, 105, 0.2); }
+
+::-moz-selection {
+  background: rgba(37, 157, 105, 0.2); }
+
+.module {
+  background-color: white;
+  border-radius: 3px;
+  max-width: 500px;
+  margin: 5% auto;
+  border: 1px solid #E8E8E8;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04); }
+  .module .item {
+    border-bottom: 1px solid #E8E8E8; }
+    .module .item:last-child {
+      border-bottom: none; }
+    .module .item .content-wrap {
+      padding: 22.5px; }
+    .module .item .title {
+      font-weight: bold;
+      font-size: 1em;
+      margin-bottom: 7.5px; }
+    .module .item .meta {
+      font-size: .85em;
+      color: #D9D9D9; }
+      .module .item .meta .author {
+        margin-right: 15px; }
+    .module .item .thumb-wrap {
+      width: 25%;
+      float: left; }
+
+#title {
+  margin-bottom: 15px; }
