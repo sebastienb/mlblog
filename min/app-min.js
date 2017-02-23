@@ -1,0 +1,1 @@
+var express=require("express"),app=express(),server=require("http").createServer(app);server.listen(3e3),app.use(express.static(__dirname+"/public")),app.get("/",function(e,r){r.sendFile(__dirname+"/index.html")});
