@@ -105,7 +105,7 @@ function updatePostList(latestPosts){
       $('#submit-comment').click( function(){
         var commentData={
           "content" : $('#comment-input').val(),
-          "datetime": moment().format('h:m A D/M/YY'),
+          "datetime": Date.now(),
           "username": $('.user-info').data('user-display-name'),
           "uid": uid,
         };
@@ -127,11 +127,23 @@ function updatePostList(latestPosts){
 }
 
 $(document).ready(function() {
+
+
+  Handlebars.registerHelper('length', function(index) {
+    var len = $.map(index, function(n, i) { return i; }).length;
+    return(len);
+  });
+
+  Handlebars.registerHelper('date', function(data) {
+    var date = moment(data).format('h:m A D/M/YY');
+    return(date);
+  });
+
   checkLoginState();
 
   //Checks for new posts
   var postList = firebase.database().ref('posts');
-  postList.on('value', function(snapshot) {
+    postList.on('value', function(snapshot) {
     updatePostList(snapshot.val());
   });
 
@@ -198,7 +210,7 @@ $(document).ready(function() {
     var postData={
       "title" : $('#title').val(),
       "content" : $('#content').summernote('code'),
-      "datetime": moment().format('h:m A D/M/YY'),
+      "datetime": Date.now(),
       "username": $('#editor').data('user-display-name'),
       "uid": $('#editor').data('uid'),
     };

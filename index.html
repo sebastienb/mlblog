@@ -11,24 +11,31 @@
     <nav class="navbar navbar-default navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#user-menu" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
           <a class="navbar-brand" href="#">
             Small
           </a>
           <p class="navbar-text">a tiny blog platform</p>
         </div>
+        <div class="collapse navbar-collapse" id="user-menu">
+            <ul class="nav navbar-nav navbar-right">
+              <li class="login-link"><a href="#" class="login">Register/Login</a></li>
+              <li class="new-post-link"><a href="#" class="new-post" data-toggle="modal" data-target="#editor-modal">Write a Post</a></li>
+              <li class="user-info dropdown">
+                <a href="" class="dropdown-toggle user-avatar-anchor" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img src="" class="avatar img-circle"></a>
+                <ul class="dropdown-menu">
+                  <li><a href=""><span class="name">My name</span></a></li>
+                  <li><a href="#" class="logout">Logout</a></li>
+                </ul>
+              </li>
+            </ul>
+        </div>
 
-        <!-- Collect the nav links, forms, and other content for toggling -->
-          <ul class="nav navbar-nav navbar-right">
-            <li class="login-link"><a href="#" class="login">Register/Login</a></li>
-            <li class="new-post-link"><a href="#" class="new-post" data-toggle="modal" data-target="#editor-modal">Write a Post</a></li>
-            <li class="user-info dropdown">
-              <a href="" class="dropdown-toggle user-avatar-anchor" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img src="" class="avatar img-circle"></a>
-              <ul class="dropdown-menu">
-                <li><a href=""><span class="name">My name</span></a></li>
-                <li><a href="#" class="logout">Logout</a></li>
-              </ul>
-            </li>
-          </ul>
 
       </div>
     </nav>
@@ -45,13 +52,14 @@
           </div>
 
           <script id="post-list-template"  type="text/x-handlebars-template">
+
             {{#each posts}}
               <div class="item post" data-id="{{@key}}" data-post-uid="{{uid}}">
                 <div class="content-wrap">
-                  <div class="post-header"><span class="date pull-right">{{datetime}}</span><span class="title">{{title}}</span></div>
+                  <div class="post-header"><span class="date pull-right">{{date datetime}}</span><span class="title">{{title}}</span></div>
                   <div class="content hide">{{{content}}}</div>
                    <div class="meta">
-                     <span class="author">Sebastien Barrau</span> <i class="ion-chatbubble icon"></i> 1</i><span class="tools hide pull-right"> <button class="btn btn-link edit-post"><i class="ion-edit icon"></i></button> <button class="btn btn-link delete-post"><i class="ion-ios-trash icon"/></button></span>
+                     <span class="author">Sebastien Barrau</span> <i class="ion-chatbubble icon"></i> {{length comments}}<span class="tools hide pull-right"> <button class="btn btn-link edit-post"><i class="ion-edit icon"></i></button> <button class="btn btn-link delete-post"><i class="ion-ios-trash icon"/></button></span>
                   </div>
                 </div>
               </div>
