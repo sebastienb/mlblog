@@ -116,10 +116,6 @@ body{
   border: none;
 }
 
-.item.post{
-  cursor: pointer;
-}
-
 #editor{
   border:0;
   margin:0;
@@ -128,4 +124,22 @@ body{
 
 #title{
   margin-bottom: $gutter;
+}
+
+#post-list{
+  .title{
+    cursor: pointer;
+    &:hover{
+      color:$green;
+    }
+    &:active{
+      color:green-dark;
+    }
+  }
+}
+.modal-backdrop.fade.in {
+   opacity: .75;
+}
+.modal-backdrop {
+   background-color: white;
 }

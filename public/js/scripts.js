@@ -1,108 +1,140 @@
-$(document).ready(function() {
-  var database = firebase.database();
-  var provider = new firebase.auth.GithubAuthProvider();
+var database = firebase.database();
+var provider = new firebase.auth.GithubAuthProvider();
 
-  var DateFormats = {
-       short: "DD MMMM - YYYY",
-       long: "dddd DD.MM.YYYY HH:mm"
-     };
+function checkLoginState(){
 
-  function clearEditor(){
-    $('#editor #id').val('');
-    $('#editor #title').val('');
-    $('#editor #content').summernote('reset');
-  };
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+      $('.user-info, .new-post-link').show();
+      $('.login-link').hide();
+      $('.user-info .avatar').attr('src', user.photoURL);
+      $('.user-info .name').html(user.displayName);
+      $('.user-info .name').html(user.email);
+      $('.user-info, #editor').attr('data-user-email', user.email).attr('data-uid', user.uid).attr('data-uid', user.uid).attr('data-user-display-name', user.displayName);
+      $('.user-info, .tools').removeClass('hide');
+      $('.new-post').closest('li').removeClass('hide');
+      } else {
+      $('.new-post-link, .user-info').hide();
+      $('.user-info .avatar').attr('src', '');
+      $('.user-info .name').html('');
+      $('.user-info, .tools').addClass('hide');
+      $('.login').closest('li').removeClass('hide');
+      $('.new-post').closest('li').removeClass('hide');
+      $('.login-link').show();
+      $('.user-info').removeAttr('data-uid').removeAttr('data-user-email').removeAttr('data-user-display-name');
+      console.log('logged out!')
+    }
+  });
+}
 
-  function closeEditor(){
-    $('#editor-modal').modal('hide');
+//checks if you are the owner of a post
+function isOwnerOf(data){
+  var currentUserId = $('.user-info').data('uid');
+  if(data == currentUserId){
+    return(true);
+  }else{
+    return(false);
   }
+}
 
-  function saveNewPost(data) {
-    firebase.database().ref('posts').push(data);
+function clearEditor(){
+  $('#editor #id').val('');
+  $('#editor #title').val('');
+  $('#editor #content').summernote('reset');
+}
+
+function closeEditor(){
+  $('#editor-modal').modal('hide');
+}
+
+function saveNewPost(data) {
+  firebase.database().ref('posts').push(data);
+}
+
+function saveNewComment(commentData, postID) {
+  firebase.database().ref('posts/'+postID+'/comments').push(commentData);
+}
+
+function updatePost(data, id) {
+  firebase.database().ref('posts/'+id).set(data);
+}
+
+function updatePostList(latestPosts){
+  var myPosts = {
+    posts: latestPosts
   };
 
-  function saveNewComment(commentData, postID) {
-    firebase.database().ref('posts/'+postID+'/comments').push(commentData);
-  };
+  var source   = $("#post-list-template").html();
+  var template = Handlebars.compile(source);
+  var html = template(myPosts);
+  $('#post-list').html(html);
 
-  function updatePost(data, id) {
-    console.log(data);
-    console.log(id);
-    firebase.database().ref('posts/'+id).set(data);
-  };
+  $('.delete-post').click( function(){
+    var postID = $(this).closest('.item').data('id');
+    firebase.database().ref('posts/'+postID).remove();
+  });
 
-  function updatePostList(latestPosts){
-    var myPosts = {
-      posts: latestPosts
-    };
-    console.log(myPosts);
-    var source   = $("#post-list-template").html();
-    var template = Handlebars.compile(source);
-    var html = template(myPosts);
-    $('#post-list').html(html);
-    console.log('updatign list');
+  $('.edit-post').click( function(e){
+    var postID = $(this).closest('.item').data('id');
+    var initialTitle = $(this).closest('.item').find('.title').text();
+    var initialContent = $(this).closest('.item').find('.content').text();
+    $('#editor #id').val(postID);
+    $('#editor #title').val(initialTitle);
+    $('#editor #content').summernote('editor.insertText', initialContent);
+    $('#editor-modal').modal('show');
+  });
 
-    $('.delete-post').click( function(){
-      var postID = $(this).closest('.item').data('id');
-      console.log('postid', postID);
-      firebase.database().ref('posts/'+postID).remove();
-    });
+  $('.item.post .title').click( function(){
+    var postID = $(this).closest('.item').data('id');
+    var singlePost = firebase.database().ref('posts/'+postID);
 
-    $('.edit-post').click( function(e){
-      var postID = $(this).closest('.item').data('id');
-      var initialTitle = $(this).closest('.item').find('.title').text();
-      var initialContent = $(this).closest('.item').find('.content').text();
-      console.log('initialTitle', initialTitle);
-      $('#editor #id').val(postID);
-      $('#editor #title').val(initialTitle);
+    singlePost.on('value', function(snapshot) {
 
-      $('#editor #content').summernote('editor.insertText', initialContent);
-      $('#editor-modal').modal('show');
-    });
+      var postData = snapshot.val();
+      var source   = $("#post-single-template").html();
+      var template = Handlebars.compile(source);
+      var html = template(snapshot.val());
+      var uid = $('.user-info').data('uid');
+      $('#post-single-body').html(html);
+      $('#post-modal').modal('show');
 
-    $('.item.post').click( function(){
-      var postID = $(this).data('id');
-      var singlePost = firebase.database().ref('posts/'+postID);
+      if(!$('.user-info').data('user-display-name')){
+        $('#comment-editor').hide();
+      }
 
-      singlePost.once('value', function(snapshot) {
+      $('#submit-comment').click( function(){
+        var commentData={
+          "content" : $('#comment-input').val(),
+          "datetime": moment().format('h:m A D/M/YY'),
+          "username": $('.user-info').data('user-display-name'),
+          "uid": uid,
+        };
 
-        var postData = snapshot.val();
-        console.log("single post data ", postData);
-        var source   = $("#post-single-template").html();
-        var template = Handlebars.compile(source);
-        var html = template(snapshot.val());
-        $('#post-single-body').html(html);
-        $('#post-modal').modal('show');
+        var postID = singlePost.key;
 
-        $('#submit-comment').click( function(){
-          var commentData={
-            "content" : $('#comment-input').val(),
-            "datetime": moment().format('h:m A D/M/YY'),
-            "username": $('.user-info').data('user-display-name'),
-            "uid": $('.user-info').data('uid'),
-          };
+        if (!uid) {
+          $('#comment-editor').hide();
+        }
 
-          var postID = singlePost.key;
-
-          if(commentData.content !==""){
-            saveNewComment(commentData,postID);
-          }else{
-            console.log('Please enter a comment.');
-          };
-        });
-
+        if(commentData.content !==""){
+          saveNewComment(commentData,postID);
+        }else{
+          console.log('Please enter a comment.');
+        }
       });
-
     });
+  });
+}
 
-  };
+$(document).ready(function() {
+  checkLoginState();
 
   //Checks for new posts
   var postList = firebase.database().ref('posts');
   postList.on('value', function(snapshot) {
     updatePostList(snapshot.val());
-    console.log("from check for new post", snapshot.val());
   });
+
 
   // init editor wysiwig content
   $('#content').summernote({
@@ -110,32 +142,35 @@ $(document).ready(function() {
     height: 120,
     toolbar: [
       // [groupName, [list of button]]
+      ['cleaner',['cleaner']], // The Button
       ['style', ['bold', 'italic', 'underline', 'clear']],
       ['font', ['strikethrough']],
-      ['fontsize', ['fontsize']],
       ['color', ['color']],
       ['para', ['ul', 'ol', 'paragraph']],
-    ]
+      ['insert',['media','link','hr']],
+      ['view',['fullscreen','codeview']],
+    ],
+    cleaner:{
+      notTime:2400, // Time to display Notifications.
+      action:'both', // both|button|paste 'button' only cleans via toolbar button, 'paste' only clean when pasting content, both does both options.
+      // newline:'<br>', // Summernote's default is to use '<p><br></p>'
+      notStyle:'position:absolute;top:0;left:0;right:0', // Position of Notification
+      icon:'<i class="note-icon">[Your Button]</i>',
+      keepHtml: false, //Remove all Html formats
+      keepClasses: false, //Remove Classes
+      badTags: ['style','script','applet','embed','noframes','noscript', 'html'], //Remove full tags with contents
+      badAttributes: ['style','start'] //Remove attributes from remaining tags
+    }
   });
 
   $('.login').click( function(e){
     e.preventDefault();
     firebase.auth().signInWithPopup(provider).then(function(result) {
-      $('.login').closest('li').addClass('hide');
       // This gives you a GitHub Access Token. You can use it to access the GitHub API.
       var token = result.credential.accessToken;
       // The signed-in user info.
       var user = result.user;
-      console.log(user);
-
-      $('.user-info .avatar').attr('src', user.photoURL);
-      $('.user-info .name').html(user.displayName);
-      $('.user-info .name').html(user.email);
-      $('.user-info').attr('data-user-email', user.email).attr('data-uid', user.uid).attr('data-uid', user.uid).attr('data-user-display-name', user.displayName);
-      $('.user-info').removeClass('hide');
-      $('.new-post').closest('li').removeClass('hide');
-      $('#editor').attr('data-user-email', user.email).attr('data-uid', user.uid).attr('data-uid', user.uid).attr('data-user-display-name', user.displayName);
-      // ...
+      checkLoginState();
     }).catch(function(error) {
       // Handle Errors here.
       var errorCode = error.code;
@@ -150,14 +185,14 @@ $(document).ready(function() {
 
   $('.logout').click(function(e){
     e.preventDefault();
-    console.log('log out click');
-    $('.user-info .avatar').attr('src', '');
-    $('.user-info .name').html('');
-    $('.user-info').addClass('hide');
-    $('.login').closest('li').removeClass('hide');
-    $('.new-post').closest('li').removeClass('hide');
-  });
+    firebase.auth().signOut().then(function() {
+      checkLoginState();
+      // Sign-out successful.
+    }, function(error) {
+      // An error happened.
+    });
 
+  });
 
   $('#submit-post').click( function(){
     var postData={
@@ -176,20 +211,35 @@ $(document).ready(function() {
         saveNewPost(postData);
       }else{
         updatePost(postData, postID);
-      };
+      }
 
       clearEditor();
       closeEditor();
 
     }else{
       console.log('Please enter a title and some content.');
-    };
+    }
   });
 
 
   $('#cancel-edit-post').click( function(){
     clearEditor();
     closeEditor();
+  });
+
+
+  $('#post-modal').on('shown.bs.modal', function (e) {
+    postUID = $(this).find('.item').data('post-uid');
+    console.log(postUID);
+
+    //show edit options if owner
+    if (isOwnerOf(postUID)) {
+      $(this).find('.tools').removeClass('hide');
+    }
+
+    //show comment form if logged in
+
+
   });
 
 

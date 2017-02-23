@@ -80,9 +80,6 @@ a, .btn-link {
   box-shadow: none;
   border: none; }
 
-.item.post {
-  cursor: pointer; }
-
 #editor {
   border: 0;
   margin: 0;
@@ -90,3 +87,16 @@ a, .btn-link {
 
 #title {
   margin-bottom: 15px; }
+
+#post-list .title {
+  cursor: pointer; }
+  #post-list .title:hover {
+    color: #259D69; }
+  #post-list .title:active {
+    color: green-dark; }
+
+.modal-backdrop.fade.in {
+  opacity: .75; }
+
+.modal-backdrop {
+  background-color: white; }
