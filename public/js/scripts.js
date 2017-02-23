@@ -5,24 +5,23 @@ function checkLoginState(){
 
   firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
-      $('.user-info, .new-post-link').show();
-      $('.login-link').hide();
-      $('.user-info .avatar').attr('src', user.photoURL);
-      $('.user-info .name').html(user.displayName);
-      $('.user-info .name').html(user.email);
-      $('.user-info, #editor').attr('data-user-email', user.email).attr('data-uid', user.uid).attr('data-uid', user.uid).attr('data-user-display-name', user.displayName);
-      $('.user-info, .tools').removeClass('hide');
-      $('.new-post').closest('li').removeClass('hide');
-      } else {
-      $('.new-post-link, .user-info').hide();
-      $('.user-info .avatar').attr('src', '');
-      $('.user-info .name').html('');
-      $('.user-info, .tools').addClass('hide');
-      $('.login').closest('li').removeClass('hide');
-      $('.new-post').closest('li').removeClass('hide');
-      $('.login-link').show();
-      $('.user-info').removeAttr('data-uid').removeAttr('data-user-email').removeAttr('data-user-display-name');
-      console.log('logged out!')
+        $('.user-info, .new-post-link').show();
+        $('.login-link').hide();
+        $('.user-info .avatar').attr('src', user.photoURL);
+        $('.user-info .name').html(user.displayName);
+        $('.user-info .name').html(user.email);
+        $('.user-info, #editor').attr('data-user-email', user.email).attr('data-uid', user.uid).attr('data-uid', user.uid).attr('data-user-display-name', user.displayName);
+        $('.user-info, .tools').removeClass('hide');
+        $('.new-post').closest('li').removeClass('hide');
+     } else {
+        $('.new-post-link, .user-info').hide();
+        $('.user-info .avatar').attr('src', '');
+        $('.user-info .name').html('');
+        $('.user-info, .tools').addClass('hide');
+        $('.login').closest('li').removeClass('hide');
+        $('.new-post').closest('li').removeClass('hide');
+        $('.login-link').show();
+        $('.user-info').removeAttr('data-uid').removeAttr('data-user-email').removeAttr('data-user-display-name');
     }
   });
 }
@@ -51,8 +50,31 @@ function saveNewPost(data) {
   firebase.database().ref('posts').push(data);
 }
 
-function saveNewComment(commentData, postID) {
-  firebase.database().ref('posts/'+postID+'/comments').push(commentData);
+function saveNewComment(uid, postID) {
+
+  var commentData={
+    "content" : $('#comment-input').val(),
+    "datetime": Date.now(),
+    "username": $('.user-info').data('user-display-name'),
+    "uid": uid,
+  };
+
+  if(commentData.content !==""){
+    firebase.database().ref('posts/'+postID+'/comments').push(commentData);
+  }else{
+    alert('Please enter a comment.');
+  }
+
+}
+
+function allowCommentEdit(){
+  $('.comment').each(function(index, el) {
+    var commentUID = $(this).data('comment-uid');
+
+    if (isOwnerOf(commentUID)) {
+      $(this).find('.comment-tools').removeClass('hide');
+    }
+  });
 }
 
 function updatePost(data, id) {
@@ -74,7 +96,10 @@ function updatePostList(latestPosts){
     firebase.database().ref('posts/'+postID).remove();
   });
 
+
+
   $('.edit-post').click( function(e){
+    
     var postID = $(this).closest('.item').data('id');
     var initialTitle = $(this).closest('.item').find('.title').text();
     var initialContent = $(this).closest('.item').find('.content').text();
@@ -95,35 +120,40 @@ function updatePostList(latestPosts){
       var template = Handlebars.compile(source);
       var html = template(snapshot.val());
       var uid = $('.user-info').data('uid');
+      var postID = singlePost.key;
+
       $('#post-single-body').html(html);
       $('#post-modal').modal('show');
+
+      $('#post-modal .post').attr('data-id', postID);
 
       if(!$('.user-info').data('user-display-name')){
         $('#comment-editor').hide();
       }
 
       $('#submit-comment').click( function(){
-        var commentData={
-          "content" : $('#comment-input').val(),
-          "datetime": Date.now(),
-          "username": $('.user-info').data('user-display-name'),
-          "uid": uid,
-        };
+        console.log(postID);
+        saveNewComment(uid, postID);
+      });
 
-        var postID = singlePost.key;
-
-        if (!uid) {
-          $('#comment-editor').hide();
-        }
-
-        if(commentData.content !==""){
-          saveNewComment(commentData,postID);
-        }else{
-          console.log('Please enter a comment.');
+      $('input[type=text]').on('keydown', function(e) {
+        if (e.which == 13) {
+            e.preventDefault();
+            saveNewComment(uid, postID);
         }
       });
+
+      allowCommentEdit();
+      $('.delete-comment').click( function(e){
+        e.preventDefault();
+        var commentID = $(this).closest('.comment').data('id');
+        var postID = $(this).closest('.post').data('id');
+        firebase.database().ref('posts/'+postID+'/comments/'+commentID).remove();
+      });
+
     });
   });
+  checkLoginState();
 }
 
 $(document).ready(function() {
@@ -143,8 +173,9 @@ $(document).ready(function() {
 
   //Checks for new posts
   var postList = firebase.database().ref('posts');
-    postList.on('value', function(snapshot) {
+  postList.on('value', function(snapshot) {
     updatePostList(snapshot.val());
+    allowCommentEdit();
   });
 
 
@@ -164,11 +195,11 @@ $(document).ready(function() {
     ],
     cleaner:{
       notTime:2400, // Time to display Notifications.
-      action:'both', // both|button|paste 'button' only cleans via toolbar button, 'paste' only clean when pasting content, both does both options.
+      action:'paste', // both|button|paste 'button' only cleans via toolbar button, 'paste' only clean when pasting content, both does both options.
       // newline:'<br>', // Summernote's default is to use '<p><br></p>'
       notStyle:'position:absolute;top:0;left:0;right:0', // Position of Notification
-      icon:'<i class="note-icon">[Your Button]</i>',
-      keepHtml: false, //Remove all Html formats
+      // icon:'<i class="note-icon">[Your Button]</i>',
+      keepHtml: true, //Remove all Html formats
       keepClasses: false, //Remove Classes
       badTags: ['style','script','applet','embed','noframes','noscript', 'html'], //Remove full tags with contents
       badAttributes: ['style','start'] //Remove attributes from remaining tags
@@ -224,35 +255,24 @@ $(document).ready(function() {
       }else{
         updatePost(postData, postID);
       }
-
       clearEditor();
       closeEditor();
 
     }else{
-      console.log('Please enter a title and some content.');
+      alert('Please enter a title and some content.');
     }
   });
 
 
   $('#cancel-edit-post').click( function(){
-    clearEditor();
     closeEditor();
+    clearEditor();
   });
 
 
-  $('#post-modal').on('shown.bs.modal', function (e) {
-    postUID = $(this).find('.item').data('post-uid');
-    console.log(postUID);
-
-    //show edit options if owner
-    if (isOwnerOf(postUID)) {
-      $(this).find('.tools').removeClass('hide');
-    }
-
-    //show comment form if logged in
-
-
-  });
+  // $('#editor-modal').on('hiden.bs.modal', function (e) {
+  //   clearEditor();
+  // });
 
 
 });

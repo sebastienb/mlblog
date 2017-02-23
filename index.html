@@ -59,7 +59,7 @@
                   <div class="post-header"><span class="date pull-right">{{date datetime}}</span><span class="title">{{title}}</span></div>
                   <div class="content hide">{{{content}}}</div>
                    <div class="meta">
-                     <span class="author">Sebastien Barrau</span> <i class="ion-chatbubble icon"></i> {{length comments}}<span class="tools hide pull-right"> <button class="btn btn-link edit-post"><i class="ion-edit icon"></i></button> <button class="btn btn-link delete-post"><i class="ion-ios-trash icon"/></button></span>
+                     <span class="author">{{username}}</span> <i class="ion-chatbubble icon"></i> {{length comments}}<span class="tools hide pull-right"> <button class="btn btn-link edit-post"><i class="ion-edit icon"></i></button> <button class="btn btn-link delete-post"><i class="ion-ios-trash icon"/></button></span>
                   </div>
                 </div>
               </div>
@@ -94,27 +94,32 @@
     <div class="modal fade" id="post-modal" tabindex="-1" role="dialog" aria-labelledby="editor-modal">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
           <div class="modal-body" id="post-single-body">
           </div>
           <script id="post-single-template"  type="text/x-handlebars-template">
 
-            <div class="item" data-id="{{@key}}" data-post-uid="{{uid}}">
+            <div class="item post" data-post-uid="{{uid}}">
               <div class="content-wrap">
                 <div class="post-header">
                   <h2 class="post-title">{{title}}</h2>
-                  <div class="date small">{{datetime}}</div>
+                  <div class="date small">{{date datetime}}</div>
                 </div>
                 <div class="content">{{{content}}}</div>
-                 <div class="meta">
-                   </i> <span class="tools hide pull-right"> <button class="btn btn-link edit-post"><i class="ion-edit icon"></i></button> <button class="btn btn-link delete-post"><i class="ion-ios-trash icon"/></button></span>
+                <div class="meta">
+                  <span class="author">{{username}}</span></span>
                 </div>
                 <hr>
                 <div class="comments">
                   <h4>Comments</h4>
                   {{#each comments}}
-                  <div class="item comment">
+                  <div class="item comment" data-id="{{@key}}" data-post-id="{{@../index}}" data-comment-uid="{{uid}}">
                     <div class="content-wrap">
-                      <p><strong>{{username}}:</strong> {{content}}</p>
+                      <span class="comment-tools hide pull-right"> <button class="btn btn-link edit-comment"><button class="btn btn-link delete-comment"><i class="ion-ios-trash icon"/></button></span>
+
+                      <div><strong>{{username}}:</strong> {{content}}</div>
                     </div>
                   </div>
                   {{/each}}
@@ -122,11 +127,12 @@
                 <div id="comment-editor" class="module">
                   <div class="item">
                       <div class="content-wrap form">
+                        <h4>Add a new comment</h4>
+                        <hr>
                         <input id="comment-post-id" type="text" class="form-control hide" val={{@key}}>
                         <input id="comment-input" type="text" class="form-control" placeholder="enter your comment">
                         <hr>
                         <button type="button" name="submit-comment" id="submit-comment" class="btn btn-primary">Submit comment</button>
-                        <!-- <button type="button" name="cancel-edit-comment" id="cancel-edit-comment" class="btn btn-default">Cancel</button> -->
                       </div>
                   </div>
                 </div>

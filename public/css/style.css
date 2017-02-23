@@ -95,8 +95,27 @@ a, .btn-link {
   #post-list .title:active {
     color: green-dark; }
 
+#post-single-body .content {
+  margin-bottom: 30px; }
+
+#post-single-body .comment {
+  margin: 15px 0;
+  padding: 15px;
+  border-bottom: 1px solid #E8E8E8; }
+
 .modal-backdrop.fade.in {
-  opacity: .75; }
+  opacity: .9; }
 
 .modal-backdrop {
   background-color: white; }
+
+.modal-header {
+  border: none; }
+
+.tools .btn, .comment-tools .btn {
+  font-size: 15px;
+  padding: 0;
+  margin-right: 3px;
+  color: #D9D9D9; }
+  .tools .btn:hover, .comment-tools .btn:hover {
+    color: #259D69; }

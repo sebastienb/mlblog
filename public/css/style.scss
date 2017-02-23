@@ -137,9 +137,35 @@ body{
     }
   }
 }
+
+#post-single-body{
+  .content{
+    margin-bottom: $gutter*2;
+
+  }
+
+  .comment{
+    margin: $gutter 0;
+    padding:$gutter;
+    border-bottom: 1px solid $grey-light;
+  }
+
+}
 .modal-backdrop.fade.in {
-   opacity: .75;
+   opacity: .9;
 }
 .modal-backdrop {
    background-color: white;
+}
+.modal-header{
+  border: none;
+}
+.tools .btn, .comment-tools .btn{
+  font-size: 15px;
+  padding:0;
+  margin-right: 3px;
+  color:$grey;
+  &:hover{
+    color: $green;
+  }
 }
